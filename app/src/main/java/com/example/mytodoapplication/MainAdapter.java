@@ -23,10 +23,9 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
 
     private List<MainData> dataList;
     private Activity context;
+    private  RoomDB database;
 
     AlertDialog.Builder builder;
-
-
 
     public MainAdapter(List<MainData> dataList, Activity context) {
         this.dataList = dataList;
@@ -48,6 +47,8 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
     public void onBindViewHolder(@NonNull MainAdapter.ViewHolder holder, int position) {
         //int main data
         MainData data=dataList.get(position);
+        //init db
+        database=RoomDB.getInstance(context);
         //set text in textview
         holder.textView.setText(data.getText());
 
@@ -81,30 +82,34 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
 
                 dialog.show();
 
-
+                //init and assign variable
                 EditText editText=dialog.findViewById(R.id.edit_text);
                 Button btUpdate=dialog.findViewById(R.id.bt_update);
 
-
+                //set text on edit text
                 editText.setText(sText);
 
                 btUpdate.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        // dismiss dialog
                         dialog.dismiss();
+                        //get update text from edit text
                         String uText=editText.getText().toString().trim();
-                       MainData data = new MainData();
+                       //update text in db
+                        database.mainDao().upate(sID,uText);
+                        //notify when data is updated
+                        dataList.clear();
+                        dataList.addAll(database.mainDao().getAll());
+
+                    /*   MainData data = new MainData();
                         data.setText(uText);
-                        dataList.set(holder.getAdapterPosition(),data);
+                        dataList.set(holder.getAdapterPosition(),data);*/
                         notifyDataSetChanged();
 
 
                     }
                 });
-
-
-
-
             }
         });
 
@@ -120,8 +125,7 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
 
                                 MainData d=dataList.get(holder.getAdapterPosition());
                                 //delete text from database
-
-                                //database.mainDao().delete(d);
+                                database.mainDao().delete(d);
                                 //notify when data is removed
                                 int position = holder.getAdapterPosition();
                                 dataList.remove(position);
@@ -152,7 +156,7 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        //init varivles
+        //init variables
 
         TextView textView;
         ImageView btEdit,btDelete;

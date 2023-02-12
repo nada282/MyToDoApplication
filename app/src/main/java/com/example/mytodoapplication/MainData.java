@@ -8,9 +8,14 @@ import androidx.room.PrimaryKey;
 
 import java.io.Serializable;
 
-
-public class MainData  {
+@Entity (tableName = "table_name")
+public class MainData implements Serializable {
+    //create id column
+    @PrimaryKey(autoGenerate = true)
     private int ID;
+        //create text column
+
+        @ColumnInfo(name = "text")
     private String text;
 
     //generate getter & setter

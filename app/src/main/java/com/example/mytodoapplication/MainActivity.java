@@ -3,7 +3,6 @@ package com.example.mytodoapplication;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -11,7 +10,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,6 +19,7 @@ public class MainActivity extends AppCompatActivity {
     RecyclerView recyclerView;
     List<MainData> dataList=new ArrayList<>();
     LinearLayoutManager linearLayoutManager;
+    RoomDB database;
     MainAdapter mainAdapter;
     AlertDialog.Builder builder;
 
@@ -33,7 +32,10 @@ public class MainActivity extends AppCompatActivity {
         btAdd=findViewById(R.id.bt_add);
         btReset=findViewById(R.id.bt_reset);
         recyclerView=findViewById(R.id.recycler_view);
-
+        //init database
+        database=RoomDB.getInstance(this);
+        //store db value in datalist
+        dataList=database.mainDao().getAll();
         linearLayoutManager =new LinearLayoutManager(this);
         //set layout manager
         recyclerView.setLayoutManager(linearLayoutManager);
@@ -52,11 +54,14 @@ public class MainActivity extends AppCompatActivity {
                     MainData data = new MainData();
                     //set text on main data
                     data.setText(sText);
-                    dataList.add(data);
+                    //insert text in databse
+                    database.mainDao().insert(data);
                     // clear
                     editText.setText("");
+                    dataList.clear();
                     //notify when data is inserted
                     Toast.makeText(MainActivity.this,"Successfully added!",Toast.LENGTH_LONG).show();
+                    dataList.addAll(database.mainDao().getAll());
                     mainAdapter.notifyDataSetChanged();
 
                 }else{
@@ -86,8 +91,11 @@ public class MainActivity extends AppCompatActivity {
                        .setCancelable(false)
                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                            public void onClick(DialogInterface dialog, int id) {
+                               //delete all data from database
+                               database.mainDao().reset(dataList);
                                //notify when all data deleted
                                dataList.clear();
+                               dataList.addAll(database.mainDao().getAll());
                                mainAdapter.notifyDataSetChanged();
                            }
                        })
